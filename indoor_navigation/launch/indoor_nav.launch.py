@@ -37,13 +37,13 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     rviz_config_file = LaunchConfiguration("rviz_config_file")
 
-    base_to_map = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="base_to_map",
-        output="screen",
-        arguments=["0", "0", "0", "0", "0", "0", "map", "base_link"],
-    )
+    #base_to_map = Node(
+    #    package="tf2_ros",
+    #    executable="static_transform_publisher",
+    #    name="base_to_map",
+    #    output="screen",
+    #    arguments=["0", "0", "0", "0", "0", "0", "map", "base_link"],
+    #)
 
     # Launch them all!
     return LaunchDescription(
@@ -86,7 +86,8 @@ def generate_launch_description():
                     os.path.join(launch_dir, "bringup_launch.py")
                 ),
                 launch_arguments={
-                    # "map": LaunchConfiguration("map"),
+                    "map": LaunchConfiguration("map"),
+                    #"slam": "True",
                     "use_sim_time": LaunchConfiguration("use_sim_time"),
                     "params_file": LaunchConfiguration("params_file"),
                     # "default_bt_xml_filename": LaunchConfiguration(
@@ -104,6 +105,6 @@ def generate_launch_description():
                     "rviz_config": rviz_config_file,
                 }.items(),
             ),
-            base_to_map,
+            #base_to_map,
         ]
     )
