@@ -10,8 +10,12 @@ ExplorerNode::ExplorerNode()
 {
   RCLCPP_INFO(get_logger(), "Explorer node started (TF-based)");
 
+  auto qos = rclcpp::QoS(rclcpp::KeepLast(1))
+             .transient_local()
+             .reliable();
+
   map_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
-    "/map", 10,
+    "/map", qos,
     std::bind(&ExplorerNode::mapCallback, this, std::placeholders::_1));
 
   nav_client_ = rclcpp_action::create_client<NavigateToPose>(
@@ -31,6 +35,7 @@ void ExplorerNode::mapCallback(
   resolution_ = msg->info.resolution;
   origin_x_ = msg->info.origin.position.x;
   origin_y_ = msg->info.origin.position.y;
+  RCLCPP_INFO(get_logger(), "Map received");
 }
 
 /* ================= TF ================= */
@@ -57,14 +62,20 @@ bool ExplorerNode::getRobotPose(double & x, double & y)
 
 void ExplorerNode::explore()
 {
+  RCLCPP_INFO(get_logger(), "Exploration step");
   if (!map_received_ || navigating_) return;
 
   double robot_x, robot_y;
   if (!getRobotPose(robot_x, robot_y)) return;
 
+  RCLCPP_INFO(
+    get_logger(), "Robot pose: (%.2f, %.2f)", robot_x, robot_y);
+
   auto & data = map_->data;
   int w = map_->info.width;
   int h = map_->info.height;
+
+  RCLCPP_INFO(get_logger(), "Map size: %d x %d", w, h);
 
   auto frontiers = detectFrontiers(data, w, h);
   if (frontiers.empty()) {
